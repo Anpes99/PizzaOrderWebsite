@@ -1,0 +1,66 @@
+{% extends "orders/layout.html"%}
+
+{%block head %}
+
+<script >
+	
+	document.addEventListener('DOMContentLoaded', () =>{
+					const request = new XMLHttpRequest();
+			
+			var userCartPrice=0;
+			if (localStorage.getItem('shoppingCart') === null){
+					window.location.href = '/';}
+			else {
+				 	cart1 = JSON.parse(localStorage.getItem('shoppingCart'));
+
+
+				 	for(var i = 0; i < cart1.length; i++) {
+
+    		const li = document.createElement('li');
+			if (cart1[i].type === 'Sub'){li.innerHTML = `${cart1[i].type}  size: ${cart1[i].Size} ${cart1[i].Ingredient1}  ${cart1[i].Price}$`;}
+			else {li.innerHTML=` ${cart1[i].type} size: ${cart1[i].Size}- ${cart1[i].Ingredient1} - ${cart1[i].Ingredient2} -${cart1[i].Ingredient3}   ${cart1[i].Price}$`;}
+
+			userCartPrice += parseFloat(cart1[i].Price);
+
+			document.querySelector('#userCart').append(li);
+		} document.querySelector('#userCartPrice1').innerHTML=`${userCartPrice}$`;}
+
+
+
+		document.querySelector('#orderConfirmed').onsubmit = () =>{
+			console.log("1...........");
+			// csfr token ongelma.......?
+			request.open("POST", "orderConfirmed");
+			request.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+			console.log("2...............");
+			request.onload = () => {
+				console.log("3...............");
+				const resp = JSON.parse(request.responseText);
+				if (resp.success){window.location.href = '/';}}
+
+			request.send();
+
+
+			}
+
+		});
+
+
+
+
+</script>
+
+{% endblock %}
+
+
+{% block body %}
+<div><h2>Shopping Cart</h2></div>
+<ul id="userCart"></ul>
+<h2 id="userCartPrice1"></h2>
+<div><h4>Confirm order?</h4></div>
+<form method="post" id="orderConfirmed">
+	{% csrf_token %}
+	<input type="submit" >
+	
+</form>
+{% endblock %}

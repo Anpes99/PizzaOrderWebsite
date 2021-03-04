@@ -1,0 +1,368 @@
+{% extends "orders/layout.html"%}
+
+{%block head %}
+
+<script>
+
+	document.addEventListener('DOMContentLoaded', () =>{
+			request = new XMLHttpRequest();
+			var userCartPrice=0;
+			if (localStorage.getItem('shoppingCart') === null){
+					let cart = [];
+				 	localStorage.setItem('shoppingCart', JSON.stringify(cart));}
+			else {
+				 	cart1 = JSON.parse(localStorage.getItem('shoppingCart'));
+
+
+				 	for(var i = 0; i < cart1.length; i++) {
+
+    		const li = document.createElement('li');
+			if (cart1[i].type === 'Sub'){li.innerHTML = `${cart1[i].type}  size: ${cart1[i].Size} ${cart1[i].Ingredient1}  ${cart1[i].Price}$`;}
+			else {li.innerHTML=` ${cart1[i].type} size: ${cart1[i].Size}- ${cart1[i].Ingredient1} - ${cart1[i].Ingredient2} -${cart1[i].Ingredient3}   ${cart1[i].Price}$`;}
+
+			userCartPrice += parseFloat(cart1[i].Price);
+
+			document.querySelector('#userCart').append(li);
+		} document.querySelector('#userCartPrice1').innerHTML=`${userCartPrice}$`;}
+
+
+
+		
+		document.querySelector('#regularPizzaForm').onsubmit = () =>{
+			request.open('POST', "/addItem");
+			request.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+			const data = new FormData();
+			var price = 0;
+			regularPizza1 = document.querySelector('#regularPizza1').value;
+			regularPizza2 = document.querySelector('#regularPizza2').value;
+			regularPizza3 = document.querySelector('#regularPizza3').value;
+			regularPizzaSize = document.querySelector('#regularPizzaSize').value;
+			pizzaPrice=calcPizzaPrice("regularPizza",regularPizzaSize,regularPizza1,regularPizza2,regularPizza3);
+			data.append("ing1",regularPizza1);
+			data.append("ing2",regularPizza2);
+			data.append("ing3",regularPizza3);
+			data.append("size",regularPizzaSize);
+			data.append("type","pizza");
+			data.append("price", pizzaPrice);
+			request.send(data);
+			request.onload = () => 
+			{	
+				const response1 = JSON.parse(request.responseText);
+				if(response1.success)
+				{cart = JSON.parse(localStorage.getItem('shoppingCart'));
+										cart.push({'type':"regularPizza",Ingredient1:regularPizza1,Ingredient2:regularPizza2,Ingredient3:regularPizza3,Size:regularPizzaSize,Price:pizzaPrice});
+										localStorage.setItem('shoppingCart', JSON.stringify(cart));
+										var li = document.createElement("li");
+										li.innerHTML=`regularPizza size: ${regularPizzaSize}- ${regularPizza1} - ${regularPizza2} - ${regularPizza3}  ${pizzaPrice}$`;
+										document.querySelector("#userCart").append(li);
+										userCartPrice += pizzaPrice;
+										document.querySelector('#userCartPrice1').innerHTML=`${userCartPrice}$`;}
+					return false;}
+			return false;
+			
+
+		};
+
+		document.querySelector('#sicilianPizzaForm').onsubmit = () =>{
+			request.open('POST', "/addItem");
+			request.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+			const data = new FormData();
+			var price = 0;
+			sicilianPizza1 = document.querySelector('#sicilianPizza1').value;
+			sicilianPizza2 = document.querySelector('#sicilianPizza2').value;
+			sicilianPizza3 = document.querySelector('#sicilianPizza3').value;
+			sicilianPizzaSize = document.querySelector('#sicilianPizzaSize').value;
+			pizzaPrice=calcPizzaPrice("sicilianPizza",sicilianPizzaSize,sicilianPizza1,sicilianPizza2,sicilianPizza3);
+			data.append("ing1",sicilianPizza1);
+			data.append("ing2",sicilianPizza2);
+			data.append("ing3",sicilianPizza3);
+			data.append("size",sicilianPizzaSize);
+			data.append("type","pizza");
+			data.append("price", pizzaPrice);
+			request.send(data);
+			request.onload = () => 
+			{	
+				const response1 = JSON.parse(request.responseText);
+				if(response1.success)
+			{cart = JSON.parse(localStorage.getItem('shoppingCart'));
+						cart.push({'type':"sicilianPizza",Ingredient1:sicilianPizza1,Ingredient2:sicilianPizza2,Ingredient3:sicilianPizza3,Size:sicilianPizzaSize,Price:pizzaPrice});
+						localStorage.setItem('shoppingCart', JSON.stringify(cart));
+						var li = document.createElement("li");
+						li.innerHTML=`sicilianPizza size: ${sicilianPizzaSize}- ${sicilianPizza1} - ${sicilianPizza2} - ${sicilianPizza3}  ${pizzaPrice}$`;
+						document.querySelector("#userCart").append(li);
+						userCartPrice += pizzaPrice;
+						document.querySelector('#userCartPrice1').innerHTML=`${userCartPrice}$`;}
+
+		return false;}
+			return false;
+			
+
+		};
+
+		document.querySelector('#subForm').onsubmit = () =>{
+			request.open('POST', "/addItem");
+			request.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+			const data = new FormData();
+			var price = 0;
+			subIngredient = document.querySelector('#subIngredient').value;
+			subSize = document.querySelector('#subSize').value;
+			subPrice=calcSubPrice(subSize,subIngredient);
+
+			data.append("ing1",subIngredient);
+			data.append("price", subPrice);
+			data.append("type","sub");
+			data.append("size",subSize);
+			request.send(data);
+			request.onload = () => 
+			{	
+				const response1 = JSON.parse(request.responseText);
+				if(response1.success)
+
+			{cart = JSON.parse(localStorage.getItem('shoppingCart'));
+						cart.push({'type':"Sub",Ingredient1:subIngredient,Size:subSize,Price:subPrice});
+						localStorage.setItem('shoppingCart', JSON.stringify(cart));
+						var li = document.createElement("li");
+						li.innerHTML=`Sub ${subSize}  ${subIngredient}  ${subPrice}$`;
+						document.querySelector("#userCart").append(li);
+						userCartPrice += subPrice;
+						document.querySelector('#userCartPrice1').innerHTML=`${userCartPrice}$`;}
+			return false;}
+			
+
+		return false;};
+
+
+
+
+
+	});
+
+	function calcSubPrice(size,ingredient){
+		price=0;
+		if (size='L'){
+
+			switch(ingredient){
+
+				case 'Cheese':
+				case 'Italian':
+				case 'Ham + Cheese':
+				case 'Meatball':
+				case 'Tuna':
+				case 'Steak':
+					price = 7.95;
+					break;
+				case 'Turkey':
+				case 'Chicken Parmigiana':
+				case 'Sausage, Peppers & Onions':
+				case 'Fried Chicken':
+				case 'Veggie':
+					price=8.5;
+					break;
+				case 'Hamburger':
+					price=6.95;
+					break;
+				case 'CheeseBurger':
+					price=7.45;
+					break;
+			}
+
+		}
+		if (size='S'){
+
+			switch(ingredient){
+
+				case 'Cheese':
+				case 'Italian':
+				case 'Ham + Cheese':
+				case 'Meatball':
+				case 'Tuna':
+				case 'Steak':
+					price = 6.50;
+					break;
+				case 'Turkey':
+				case 'Chicken Parmigiana':
+				case 'Sausage, Peppers & Onions':
+					price=7.50;
+				case 'Fried Chicken':
+				case 'Veggie':
+					price=6.95;
+					break;
+				case 'Hamburger':
+					price=4.60;
+					break;
+				case 'Cheeseburger':
+					price=5.10;
+					break;
+			}
+
+		}
+
+		return price;
+
+	}
+
+	function calcPizzaPrice(item, size, ing1, ing2, ing3){
+		price =0;
+		if (item === 'regularPizza')
+		{if (size === 'L'){
+					price = 17.95;
+					if(ing1 !== null){price+=2;}
+					if(ing2 !== null){price+=2;}
+					if(ing3 !== null){price+=2;}
+					return price;
+				}
+				if (size === 'S'){
+					price = 12.70;
+					if(ing1 !== null){price+=1;}
+					if(ing2 !== null){price+=1.5;}
+					if(ing3 !== null){price+=1;}
+					return price;
+				}}
+
+		if (item === 'sicilianPizza')
+		{if (size === 'L'){
+					price = 38.70;
+					if(ing1 !== null){price+=2;}
+					if(ing2 !== null){price+=2;}
+					if(ing3 !== null){price+=2;}
+					return price;
+				}
+				if (size === 'S'){
+					price = 17.95;
+					if(ing1 !== null){price+=2;}
+					if(ing2 !== null){price+=2;}
+					if(ing3 !== null){price+=1;}
+					return price;
+				}}
+
+	}
+</script>
+
+{%endblock%}
+
+
+
+{%block body%}
+<div>
+	<h2>Regular pizza</h2>
+	<ul>
+		<li>Cheese</li>
+		<li>1 topping</li>
+		<li>2 toppings</li>
+		<li>3 toppings</li>
+		<li>Special</li>
+	</ul>
+</div>
+
+
+
+<div>
+<form id="regularPizzaForm">
+	{% csrf_token %}
+<select class="custom-select custom-select-sm" id="regularPizzaSize">
+  <option selected>Select size</option>
+  <option value="S">Small</option>
+  <option value="L">Large</option>
+</select>
+<select class="custom-select custom-select-sm" id="regularPizza1">
+  <option selected>ingredient (optional)</option>
+  {% for ingredient in pizzaIngredients %}
+	<option value="{{ingredient}}">{{ingredient}}</option>
+	{{ingredient}}
+{% endfor %}
+</select>
+<select class="custom-select custom-select-sm" id="regularPizza2">
+  <option selected>ingredient (optional)</option>
+  {% for ingredient in pizzaIngredients %}
+	<option value="{{ingredient}}">{{ingredient}}</option>
+{% endfor %}
+</select>
+<select class="custom-select custom-select-sm" id="regularPizza3">
+  <option selected>ingredient (optional)</option>
+  {% for ingredient in pizzaIngredients %}
+	<option value="{{ingredient}}">{{ingredient}}</option>
+{% endfor %}
+</select>
+  <input type="submit">
+</form>
+</div>
+
+
+
+<div>
+	<h2>Sicilian pizza</h2>
+	<ul>
+		<li>Cheese</li>
+		<li>1 topping</li>
+		<li>2 toppings</li>
+		<li>3 toppings</li>
+		<li>Special</li>
+	</ul>
+</div>
+
+<div>
+<form id="sicilianPizzaForm">
+	{% csrf_token %}
+<select class="custom-select custom-select-sm" id="sicilianPizzaSize">
+  <option selected>Select size</option>
+  <option value="S">Small</option>
+  <option value="L">Large</option>
+</select>
+<select class="custom-select custom-select-sm" id="sicilianPizza1">
+  <option selected>ingredient (optional)</option>
+  {% for ingredient in pizzaIngredients %}
+	<option value="{{ingredient}}">{{ingredient}}</option>
+	{{ingredient}}
+{% endfor %}
+</select>
+<select class="custom-select custom-select-sm" id="sicilianPizza2">
+  <option selected>ingredient (optional)</option>
+  {% for ingredient in pizzaIngredients %}
+	<option value="{{ingredient}}">{{ingredient}}</option>
+{% endfor %}
+</select>
+<select class="custom-select custom-select-sm" id="sicilianPizza3">
+  <option selected>ingredient (optional)</option>
+  {% for ingredient in pizzaIngredients %}
+	<option value="{{ingredient}}">{{ingredient}}</option>
+{% endfor %}
+</select>
+  <input type="submit">
+</form>
+</div>
+
+<h2>Subs</h2>
+
+<div>
+<form id="subForm">
+	{% csrf_token %}
+<select class="custom-select custom-select-sm" id="subSize">
+  <option selected>Select size</option>
+  <option value="S">Small</option>
+  <option value="L">Large</option>
+</select>
+<select class="custom-select custom-select-sm" id="subIngredient">
+  <option selected>Select filling</option>
+  {% for ingredient in subIngredients %}
+	<option value="{{ingredient}}">{{ingredient}}</option>
+{% endfor %}
+</select>
+  <input type="submit">
+</form>
+</div>
+
+<div>
+	
+	<h1>Shopping cart</h1>
+	<ul id="userCart">
+		
+	</ul>
+</div>
+<form action="{% url 'confirmCart' %}" id="submitUserCart">
+	{% csrf_token %}
+	<button  type="submit" >Order</button>
+</form>
+<h5 id="userCartPrice1"></h5>
+
+
+{%endblock%}
